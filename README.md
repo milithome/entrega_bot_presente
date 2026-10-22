@@ -1,5 +1,8 @@
 # ENTREGA CONVERSACION CON EL BOT
 ![Chat del bot mostrando /pokemon_foto lugia](docs/screenshot_entrega.png)
+
+* Codigo en el app/routes 
+
 # Logging
 
 Telegram Bot Example
