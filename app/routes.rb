@@ -38,6 +38,42 @@ class Routes
     bot.api.send_message(chat_id: message.chat.id, text: 'Busqueda por ubicacion', reply_markup: markup)
   end
 
+  on_message_pattern %r{/pokemon (?<pokemon_name>.*)} do |bot, message, args|
+    pokemon_name = args['pokemon_name'].strip.downcase
+    pokemon_response = Faraday.get("https://pokeapi.co/api/v2/pokemon/#{pokemon_name}")
+
+    if pokemon_response.status == 200
+      pokemon_json = JSON.parse(pokemon_response.body)
+      pokemon_text = "Pokemon: #{pokemon_json['name']} - Types: #{pokemon_json['types'].map { |type| type['type']['name'] }.join(', ')}"
+    else
+      pokemon_text = "No encontré ningún Pokémon llamado '#{pokemon_name}'"
+    end
+
+    puts "Pokemon text: #{pokemon_text}"
+    bot.api.send_message(chat_id: message.chat.id, text: pokemon_text)
+  end
+
+  on_message_pattern %r{/pokemon_foto (?<pokemon_name>.*)} do |bot, message, args|
+    pokemon_name = args['pokemon_name'].strip.downcase
+    pokemon_response = Faraday.get("https://pokeapi.co/api/v2/pokemon/#{pokemon_name}")
+
+    if pokemon_response.status == 200
+      pokemon_json = JSON.parse(pokemon_response.body)
+      caption = pokemon_json['name'].capitalize.to_s
+
+      bot.api.send_photo(
+        chat_id: message.chat.id,
+        photo: pokemon_json['sprites']['front_default'],
+        caption:
+      )
+    else
+      bot.api.send_message(
+        chat_id: message.chat.id,
+        text: "No encontré ningún Pokémon llamado '#{pokemon_name}'"
+      )
+    end
+  end
+
   on_location_response do |bot, message|
     response = "Ubicacion es Lat:#{message.location.latitude} - Long:#{message.location.longitude}"
     puts response

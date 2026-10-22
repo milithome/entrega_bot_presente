@@ -75,6 +75,31 @@ def then_i_get_keyboard_message(token, message_text)
     .to_return(status: 200, body: body.to_json, headers: {})
 end
 
+def stub_pokemon_response(pokemon_name, types)
+  body = {
+    name: pokemon_name,
+    types: types.map { |type_name| { type: { name: type_name } } },
+    sprites: { front_default: "https://example.com/#{pokemon_name}.png" }
+  }
+
+  stub_request(:get, "https://pokeapi.co/api/v2/pokemon/#{pokemon_name}")
+    .to_return(status: 200, body: body.to_json, headers: {})
+end
+
+def then_i_get_photo(token, photo_url, caption)
+  body = { "ok": true,
+           "result": { "message_id": 12,
+                       "from": { "id": 715_612_264, "is_bot": true, "first_name": 'fiuba-memo2-prueba', "username": 'fiuba_memo2_bot' },
+                       "chat": { "id": 141_733_544, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
+                       "date": 1_557_782_999, "caption": caption } }
+
+  stub_request(:post, "https://api.telegram.org/bot#{token}/sendPhoto")
+    .with(
+      body: { 'chat_id' => '141733544', 'photo' => photo_url, 'caption' => caption }
+    )
+    .to_return(status: 200, body: body.to_json, headers: {})
+end
+
 describe 'BotClient' do
   it 'should get a /version message and respond with current version' do
     token = 'fake_token'
@@ -151,5 +176,25 @@ describe 'BotClient' do
     app = BotClient.new(token)
 
     app.run_once
+  end
+
+  it 'should get a /pokemon message and respond with the pokemon information' do
+    token = 'fake_token'
+
+    stub_pokemon_response('ditto', ['normal'])
+    when_i_send_text(token, '/pokemon ditto')
+    then_i_get_text(token, 'Pokemon: ditto - Types: normal')
+
+    BotClient.new(token).run_once
+  end
+
+  it 'should get a /pokemon_foto message and respond with the pokemon photo and name' do
+    token = 'fake_token'
+
+    stub_pokemon_response('ditto', ['normal'])
+    when_i_send_text(token, '/pokemon_foto ditto')
+    then_i_get_photo(token, 'https://example.com/ditto.png', 'Ditto')
+
+    BotClient.new(token).run_once
   end
 end
