@@ -1,5 +1,5 @@
 # ENTREGA CONVERSACION CON EL BOT
-![Chat del bot mostrando /pokemon_foto lugia](docs/ejemplo_bot_lugia.png)
+![Chat del bot mostrando /pokemon_foto lugia](docs/screenshot_entrega.png)
 # Logging
 
 Telegram Bot Example
